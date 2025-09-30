@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bloom & Blush — 化妝商品專門店</title>
+  <meta name="description" content="簡約粉色系化妝品牌網站範例 — 首頁、商品、品牌故事、最新消息、聯絡我們。單檔 HTML 範例。">
+  <style>
+    :root{
+      --pink-1:#FFD6E8;
+      --pink-2:#F7C7D9;
+      --accent:#FF8FB3;
+      --text:#2E2E2E;
+      --muted:#9B9B9B;
+      --card:#ffffff;
+      --glass: rgba(255,255,255,0.6);
+      --radius:14px;
+      --shadow: 0 6px 20px rgba(46,46,46,0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--pink-1),#FFF);color:var(--text);}
+    a{text-decoration:none;color:inherit}
+    header{position:sticky;top:0;backdrop-filter: blur(6px);background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));border-bottom:1px solid rgba(0,0,0,0.04);z-index:40}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+
+    /* nav */
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo .mark{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--pink-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:var(--shadow)}
+    nav ul{list-style:none;display:flex;gap:18px;padding:0;margin:0}
+    nav li{cursor:pointer;padding:10px 12px;border-radius:10px}
+    nav li:hover{background:var(--glass)}
+    .cta{padding:10px 16px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#FF6FA0);color:white;font-weight:600;box-shadow:var(--shadow)}
+
+    /* hero */
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:32px;align-items:center;padding:48px 0}
+    .hero h1{font-size:36px;margin:0 0 12px}
+    .lead{color:var(--muted);margin-bottom:18px}
+    .hero .actions{display:flex;gap:12px}
+    .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:var(--shadow)}
+
+    /* products */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+    .product{border-radius:12px;padding:12px;background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);transition:transform .22s ease, box-shadow .22s;cursor:pointer}
+    .product:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(46,46,46,0.12)}
+    .product img{width:100%;height:160px;object-fit:cover;border-radius:8px}
+    .price{font-weight:700;color:var(--text)}
+
+    /* about timeline */
+    .timeline{display:flex;flex-direction:column;gap:16px;padding:12px}
+    .tl-item{display:flex;gap:14px;align-items:flex-start}
+    .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);flex:0 0 12px;margin-top:6px}
+
+    /* news carousel simple */
+    .swiper{display:flex;overflow:hidden;gap:12px}
+    .news-card{min-width:260px;padding:16px;border-radius:12px;background:linear-gradient(180deg,var(--pink-2),#fff);box-shadow:var(--shadow)}
+
+    /* contact */
+    form{display:grid;gap:12px}
+    input,textarea,select{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);font-size:14px}
+    button{padding:12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#FF6FA0);color:white;font-weight:700}
+
+    footer{padding:28px 0;color:var(--muted)}
+
+    /* small screens */
+    @media (max-width:880px){
+      .hero{grid-template-columns:1fr;}
+      nav ul{display:none}
+    }
+
+    /* small animation */
+    .fade-in{opacity:0;transform:translateY(8px);animation:fadeIn .6s forwards}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+
+    /* utility */
+    .muted{color:var(--muted)}
+    .center{text-align:center}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="logo">
+        <div class="mark">B</div>
+        <div>
+          <div style="font-weight:700">Bloom & Blush</div>
+          <div class="muted" style="font-size:12px">化妝商品專門店</div>
+        </div>
+      </div>
+      <nav>
+        <ul>
+          <li data-target="home">首頁</li>
+          <li data-target="products">商品</li>
+          <li data-target="about">品牌故事</li>
+          <li data-target="news">最新消息</li>
+          <li data-target="contact">聯絡我們</li>
+        </ul>
+      </nav>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="muted" style="font-size:13px">門市：台北市中山區</div>
+        <a class="cta" href="#products">購物</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HOME -->
+    <section id="home" class="fade-in">
+      <div class="hero">
+        <div>
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+            <span style="background:var(--pink-2);padding:6px 10px;border-radius:999px;font-weight:600">新品上市</span>
+            <span class="muted" style="font-size:13px">熱銷中 • 限量推出</span>
+          </div>
+          <h1>簡約之美 · 每日好氣色</h1>
+          <p class="lead">Bloom & Blush 提供天然質感的彩妝選品，從初學者到專業彩妝師都能找到適合的單品。</p>
+          <div class="actions">
+            <a class="cta" href="#products">立即選購</a>
+            <a style="padding:10px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:white">了解品牌</a>
+          </div>
+
+          <div style="margin-top:28px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            <div class="card">
+              <strong>專業諮詢</strong>
+              <div class="muted" style="font-size:13px">線上彩妝諮詢預約</div>
+            </div>
+            <div class="card">
+              <strong>無條件退貨</strong>
+              <div class="muted" style="font-size:13px">7 天內安心退換</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card center">
+          <!-- simple illustration -->
+          <svg width="220" height="220" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g" x1="0" x2="1">
+                <stop offset="0" stop-color="#FFD6E8"/>
+                <stop offset="1" stop-color="#FF8FB3"/>
+              </linearGradient>
+            </defs>
+            <rect x="10" y="18" width="180" height="120" rx="14" fill="url(#g)" />
+            <circle cx="60" cy="70" r="24" fill="#fff" opacity="0.6"/>
+            <rect x="120" y="60" width="50" height="12" rx="6" fill="#fff" opacity="0.6"/>
+            <text x="100" y="170" text-anchor="middle" font-size="14" fill="#7A3A4B">Bloom & Blush</text>
+          </svg>
+          <div class="muted" style="margin-top:12px">精選主打：光感蜜粉 / 滋潤口紅</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="products" style="margin-top:40px">
+      <h2>商品分類</h2>
+      <div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
+        <button class="card" onclick="filter('all')">全部</button>
+        <button class="card" onclick="filter('lip')">口紅</button>
+        <button class="card" onclick="filter('face')">底妝</button>
+        <button class="card" onclick="filter('eye')">眼妝</button>
+        <button class="card" onclick="filter('brush')">工具</button>
+      </div>
+
+      <div class="grid" id="productGrid">
+        <!-- sample products -->
+        <div class="product" data-cat="lip" onclick="openProduct(event, '玫瑰光感口紅', 780)">
+          <img src="https://images.unsplash.com/photo-1543168255-8a9f8b9b7b68?q=80&w=800&auto=format&fit=crop&crop=entropy&s=placeholder" alt="口紅示意">
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">玫瑰光感口紅</div>
+              <div class="muted" style="font-size:13px">柔霧質地</div>
+            </div>
+            <div class="price">NT$780</div>
+          </div>
+        </div>
+
+        <div class="product" data-cat="face" onclick="openProduct(event, '柔霧持久粉底', 1250)">
+          <img src="https://images.unsplash.com/photo-1556228453-0f7c8b8d8f9b?q=80&w=800&auto=format&fit=crop&crop=entropy&s=placeholder" alt="粉底示意">
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">柔霧持久粉底</div>
+              <div class="muted" style="font-size:13px">自然遮瑕</div>
+            </div>
+            <div class="price">NT$1,250</div>
+          </div>
+        </div>
+
+        <div class="product" data-cat="eye" onclick="openProduct(event, '四色眼影盤', 980)">
+          <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800&auto=format&fit=crop&crop=entropy&s=placeholder" alt="眼影示意">
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">四色眼影盤</div>
+              <div class="muted" style="font-size:13px">日常與派對兩用</div>
+            </div>
+            <div class="price">NT$980</div>
+          </div>
+        </div>
+
+        <div class="product" data-cat="brush" onclick="openProduct(event, '專業化妝刷組', 900)">
+          <img src="https://images.unsplash.com/photo-1562158070-5c1b15b8931b?q=80&w=800&auto=format&fit=crop&crop=entropy&s=placeholder" alt="刷具示意">
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">專業化妝刷組</div>
+              <div class="muted" style="font-size:13px">親膚毛質</div>
+            </div>
+            <div class="price">NT$900</div>
+          </div>
+        </div>
+
+        <!-- duplicate to show grid -->
+        <div class="product" data-cat="lip" onclick="openProduct(event, '絲絨唇露', 680)">
+          <img src="https://images.unsplash.com/photo-1562158070-5c1b15b8931b?q=80&w=800&auto=format&fit=crop&crop=entropy&s=placeholder" alt="唇露示意">
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">絲絨唇露</div>
+              <div class="muted" style="font-size:13px">輕薄不黏膩</div>
+            </div>
+            <div class="price">NT$680</div>
+          </div>
+        </div>
+
+        <div class="product" data-cat="face" onclick="openProduct(event, '玻尿酸打底精華', 980)">
+          <img src="https://images.unsplash.com/photo-1581579184336-92b3793e8f96?q=80&w=800&auto=format&fit=crop&crop=entropy&s=placeholder" alt="精華示意">
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700">玻尿酸打底精華</div>
+              <div class="muted" style="font-size:13px">保濕鎖妝</div>
+            </div>
+            <div class="price">NT$980</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" style="margin-top:48px">
+      <h2>品牌故事</h2>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;margin-top:12px">
+        <div>
+          <p class="muted">Bloom & Blush 成立於 2019 年，創辦人希望以『簡約、健康、友善』為核心，設計出讓人每天都想使用的彩妝。</p>
+          <div class="timeline">
+            <div class="tl-item"><div class="dot"></div><div><strong>2019</strong> — 品牌創立，第一款口紅上線。</div></div>
+            <div class="tl-item"><div class="dot"></div><div><strong>2021</strong> — 推出無動物實驗系列。</div></div>
+            <div class="tl-item"><div class="dot"></div><div><strong>2023</strong> — 實體概念店開幕。</div></div>
+          </div>
+        </div>
+        <div class="card center">
+          <!-- soft illustration -->
+          <svg width="240" height="180" viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="10" width="220" height="160" rx="16" fill="#fff"/>
+            <g transform="translate(28,28)">
+              <rect x="0" y="0" width="64" height="18" rx="6" fill="var(--pink-2)"/>
+              <circle cx="140" cy="48" r="28" fill="var(--accent)" opacity="0.9"/>
+              <rect x="96" y="70" width="88" height="12" rx="6" fill="var(--pink-1)"/>
+            </g>
+          </svg>
+          <div class="muted" style="margin-top:10px">我們堅持溫和配方與永續包材。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section id="news" style="margin-top:48px">
+      <h2>最新消息 / 活動</h2>
+      <div style="margin-top:12px;display:flex;gap:16px;align-items:flex-start">
+        <div style="flex:1">
+          <div class="swiper">
+            <div class="news-card">
+              <h3 style="margin:0">中秋限定禮盒開賣</h3>
+              <p class="muted" style="font-size:13px">9/30 - 限量發售，買禮盒送專屬禮袋。</p>
+            </div>
+            <div class="news-card">
+              <h3 style="margin:0">秋冬彩妝技巧班</h3>
+              <p class="muted" style="font-size:13px">12/05 現場教學，名額有限。</p>
+            </div>
+            <div class="news-card">
+              <h3 style="margin:0">週年慶折扣</h3>
+              <p class="muted" style="font-size:13px">全館最高 25% off。</p>
+            </div>
+          </div>
+        </div>
+        <div style="width:260px">
+          <div class="card">
+            <strong>訂閱電子報</strong>
+            <p class="muted" style="font-size:13px">取得新品與獨家優惠。</p>
+            <div style="margin-top:8px"><input placeholder="輸入 Email"></div>
+            <div style="margin-top:8px"><button>訂閱</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" style="margin-top:48px;margin-bottom:40px">
+      <h2>聯絡我們</h2>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:12px">
+        <div class="card">
+          <form onsubmit="event.preventDefault();alert('已送出（示範）')">
+            <label>姓名</label>
+            <input required placeholder="你的姓名">
+            <label>Email</label>
+            <input type="email" required placeholder="you@example.com">
+            <label>訊息主題</label>
+            <select>
+              <option>商品問題</option>
+              <option>合作洽詢</option>
+              <option>其他</option>
+            </select>
+            <label>內容</label>
+            <textarea rows="5" placeholder="請輸入訊息"></textarea>
+            <div style="margin-top:6px"><button type="submit">送出</button></div>
+          </form>
+        </div>
+        <div>
+          <div class="card center">
+            <div style="font-weight:700">門市資訊</div>
+            <div class="muted" style="font-size:13px;margin-top:6px">台北市中山區 假真的路 123 號</div>
+            <div style="margin-top:10px">營業時間：周一–周日 11:00 – 20:00</div>
+            <div style="margin-top:10px" class="muted">社群：IG / FB / LINE</div>
+          </div>
+          <div style="margin-top:12px" class="card">
+            <!-- map placeholder -->
+            <div class="muted">地圖示意（正式上線建議使用 Google Maps embed）</div>
+            <div style="height:160px;background:linear-gradient(180deg,var(--pink-1),#fff);border-radius:10px;margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:700">Bloom & Blush</div>
+        <div class="muted" style="font-size:13px">© 2025 Bloom & Blush — All rights reserved</div>
+      </div>
+      <div class="muted">客服：service@bloomblush.example</div>
+    </div>
+  </footer>
+
+  <!-- product modal (simple) -->
+  <div id="modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:60">
+    <div style="width:min(720px,96%);padding:18px;border-radius:14px;background:white;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <img id="modalImg" src="" alt="" style="width:180px;height:150px;object-fit:cover;border-radius:10px">
+        <div style="flex:1">
+          <h3 id="modalTitle" style="margin:0">商品</h3>
+          <div id="modalPrice" class="muted" style="margin-top:6px;font-size:18px;color:var(--text)"></div>
+          <p class="muted" style="margin-top:8px">產品描述示意。正式案子請替換為實際文案與規格。</p>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button onclick="addToCart()">加入購物車</button>
+            <button onclick="closeModal()" style="background:transparent;border:1px solid rgba(0,0,0,0.06)">關閉</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // navigation
+    document.querySelectorAll('nav li').forEach(li=>li.addEventListener('click', e=>{
+      const t = e.currentTarget.dataset.target;
+      if(t) location.hash = t;
+    }));
+
+    function showSection(name){
+      document.querySelectorAll('main section').forEach(s=>s.style.display = s.id === name ? 'block' : 'none');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // initial
+    if(location.hash){
+      showSection(location.hash.replace('#',''))
+    } else showSection('home')
+
+    // allow hash changes
+    window.addEventListener('hashchange', ()=>{
+      const id = location.hash.replace('#','') || 'home';
+      showSection(id);
+    })
+
+    // simple product modal
+    function openProduct(e, title, price){
+      const modal = document.getElementById('modal');
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalPrice').textContent = 'NT$' + price;
+      // pick img from clicked card
+      const img = e.currentTarget.querySelector('img')?.src || '';
+      document.getElementById('modalImg').src = img;
+      modal.style.display = 'flex';
+    }
+    function closeModal(){document.getElementById('modal').style.display = 'none'}
+    function addToCart(){alert('已加入購物車（示範）'); closeModal();}
+
+    // filter
+    function filter(cat){
+      const items = document.querySelectorAll('.product');
+      items.forEach(it=>{
+        if(cat === 'all' || it.dataset.cat === cat) it.style.display = '';
+        else it.style.display = 'none';
+      })
+    }
+  </script>
+</body>
+</html>
