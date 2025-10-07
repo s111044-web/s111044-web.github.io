@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>甜點購物網站（進銷存示範）</title>
+  <style>
+    :root{--accent:#d66877;--muted:#666;--bg:#faf7f6}
+    body{font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans CJK TC", "PingFang TC", "Microsoft JhengHei", Arial; margin:0;background:var(--bg);color:#222}
+    header{background:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+    header h1{margin:0;font-size:20px;color:var(--accent)}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:20px}
+    /* product list */
+    .products{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:8px}
+    .thumb{height:120px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .prod-name{font-size:15px;margin:0}
+    .price{color:var(--accent);font-weight:700}
+    .muted{color:var(--muted);font-size:13px}
+    button{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
+    button.alt{background:#888}
+    /* cart */
+    .panel{background:#fff;padding:12px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.05)}
+    .cart-item{display:flex;gap:8px;align-items:center}
+    .small{font-size:13px}
+    .admin-controls{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    input,select,textarea{padding:8px;border-radius:6px;border:1px solid #e6e6e6}
+    .tools{display:flex;gap:8px;align-items:center}
+    footer{margin:30px 0;text-align:center;color:#999;font-size:13px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr} .products{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:560px){.products{grid-template-columns:1fr} header h1{font-size:16px}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>甜點小舖（示範版）</h1>
+    <div>
+      <span id="stockSummary" class="small muted"></span>
+      <button id="adminBtn" class="alt">管理後台</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <section>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <input id="search" placeholder="搜尋甜點或分類（例如：蛋糕、餅乾）" />
+            <select id="filter" style="margin-left:8px">
+              <option value="all">全部分類</option>
+              <option value="蛋糕">蛋糕</option>
+              <option value="餅乾">餅乾</option>
+              <option value="塔">塔</option>
+              <option value="派">派</option>
+              <option value="布丁">布丁</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="tools">
+            <button id="resetSample" class="alt">重設範例資料</button>
+            <button id="viewSales" class="alt">查看銷售紀錄</button>
+          </div>
+        </div>
+
+        <div id="products" class="products"></div>
+      </section>
+
+      <aside>
+        <div class="panel">
+          <h3>購物車</h3>
+          <div id="cartList"></div>
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="small muted">商品總數: <span id="cartCount">0</span></div>
+              <div class="small muted">總金額: NT$ <span id="cartTotal">0</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button id="checkout">結帳</button>
+              <button id="clearCart" class="alt">清空購物車</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:12px">
+          <h4>管理面板（需登入）</h4>
+          <div id="adminArea">
+            <div>
+              <input id="adminUser" placeholder="帳號（admin）" />
+              <input id="adminPass" placeholder="密碼（admin123）" type="password" />
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <button id="loginBtn">登入</button>
+                <button id="logoutBtn" class="alt" style="display:none">登出</button>
+              </div>
+            </div>
+            <div id="adminControls" style="display:none;margin-top:10px">
+              <div class="admin-controls">
+                <button id="showInventory" class="alt">查看進銷存資料</button>
+                <button id="exportSales">匯出銷售紀錄（CSV）</button>
+                <button id="addProductBtn">新增商品</button>
+              </div>
+              <div id="inventoryList" style="margin-top:10px"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Modal: add product -->
+    <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;padding:20px">
+      <div style="background:#fff;padding:16px;border-radius:10px;max-width:680px;width:100%">
+        <h3 id="modalTitle">新增商品</h3>
+        <div style="display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:start">
+          <div>
+            <input id="pName" placeholder="商品名稱" />
+            <input id="pCat" placeholder="分類（蛋糕/餅乾/塔/派/布丁/其他）" />
+            <input id="pPrice" placeholder="價格（數字）" />
+            <input id="pStock" placeholder="庫存（數字）" />
+            <textarea id="pDesc" placeholder="簡短描述" style="min-height:80px"></textarea>
+          </div>
+          <div>
+            <div style="font-size:13px;color:#666;margin-bottom:6px">圖片預覽（可選，留空使用自動佔位）</div>
+            <input id="pImg" placeholder="DataURL 或 留空" />
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <button id="saveProduct">儲存</button>
+              <button id="cancelModal" class="alt">取消</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: sales list -->
+    <div id="salesModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;padding:20px">
+      <div style="background:#fff;padding:16px;border-radius:10px;max-width:900px;width:100%;max-height:80vh;overflow:auto">
+        <h3>銷售紀錄</h3>
+        <div id="salesList"></div>
+        <div style="margin-top:12px;display:flex;justify-content:flex-end">
+          <button id="closeSales">關閉</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>本示範系統在瀏覽器端使用 localStorage 保存資料；管理員帳號: <strong>admin</strong> 密碼: <strong>admin123</strong></footer>
+  </main>
+
+  <script>
+    /***** 初始範例商品 (20 種) *****/
+    const SAMPLE_PRODUCTS = [
+      {id:1,name:'經典起司蛋糕',cat:'蛋糕',price:280,stock:12,desc:'綿密濃郁的起司風味。'},
+      {id:2,name:'伯爵茶磅蛋糕',cat:'蛋糕',price:220,stock:10,desc:'英式伯爵茶香。'},
+      {id:3,name:'草莓奶油蛋糕',cat:'蛋糕',price:350,stock:8,desc:'新鮮草莓與鮮奶油。'},
+      {id:4,name:'檸檬塔',cat:'塔',price:180,stock:15,desc:'酸甜爽口的檸檬塔。'},
+      {id:5,name:'巧克力慕斯',cat:'蛋糕',price:240,stock:9,desc:'濃郁黑巧克力慕斯。'},
+      {id:6,name:'焦糖布丁',cat:'布丁',price:90,stock:20,desc:'滑順焦糖布丁。'},
+      {id:7,name:'奶酥小餅乾',cat:'餅乾',price:45,stock:50,desc:'酥脆奶香小餅。'},
+      {id:8,name:'巧克力曲奇',cat:'餅乾',price:55,stock:40,desc:'濃郁巧克力豆。'},
+      {id:9,name:'抹茶紅豆卷',cat:'蛋糕',price:200,stock:11,desc:'抹茶香與紅豆餡。'},
+      {id:10,name:'藍莓乳酪塔',cat:'塔',price:210,stock:7,desc:'藍莓與乳酪的結合。'},
+      {id:11,name:'核桃派',cat:'派',price:230,stock:6,desc:'香脆核桃派。'},
+      {id:12,name:'香草杯子蛋糕',cat:'蛋糕',price:60,stock:30,desc:'口感輕盈的小杯蛋糕。'},
+      {id:13,name:'鹽之焦糖巧克力',cat:'其他',price:150,stock:14,desc:'鹹甜交織的巧克力。'},
+      {id:14,name:'檸檬瑪德蓮',cat:'餅乾',price:40,stock:25,desc:'小巧檸檬風味瑪德蓮。'},
+      {id:15,name:'香蕉巧克力蛋糕',cat:'蛋糕',price:260,stock:5,desc:'香蕉與巧克力的溫柔搭配。'},
+      {id:16,name:'柚香奶凍',cat:'布丁',price:110,stock:18,desc:'清爽柚子香的奶凍。'},
+      {id:17,name:'杏仁瓦片',cat:'餅乾',price:70,stock:35,desc:'薄脆杏仁片。'},
+      {id:18,name:'黑糖年輪',cat:'蛋糕',price:190,stock:9,desc:'黑糖香的年輪蛋糕。'},
+      {id:19,name:'抹茶白巧塔',cat:'塔',price:230,stock:4,desc:'抹茶與白巧克力塔。'},
+      {id:20,name:'經典奶酪',cat:'布丁',price:85,stock:28,desc:'光滑細緻的奶酪。'},
+    ];
+
+    /***** Storage helpers *****/
+    const STORAGE_KEYS = {PRODUCTS:'dessert_products_v1',CART:'dessert_cart_v1',SALES:'dessert_sales_v1'};
+    function saveProducts(products){localStorage.setItem(STORAGE_KEYS.PRODUCTS,JSON.stringify(products))}
+    function loadProducts(){const s=localStorage.getItem(STORAGE_KEYS.PRODUCTS);return s?JSON.parse(s):null}
+    function saveCart(cart){localStorage.setItem(STORAGE_KEYS.CART,JSON.stringify(cart))}
+    function loadCart(){const s=localStorage.getItem(STORAGE_KEYS.CART);return s?JSON.parse(s):[]}
+    function saveSales(sales){localStorage.setItem(STORAGE_KEYS.SALES,JSON.stringify(sales))}
+    function loadSales(){const s=localStorage.getItem(STORAGE_KEYS.SALES);return s?JSON.parse(s):[]}
+
+    /***** Utilities *****/
+    function uid(){return Date.now()+Math.floor(Math.random()*1000)}
+    function makePlaceholderSVG(text){
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' fill='#fff5f7'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='22' fill='#b94a5a'>${text}</text></svg>`;
+      return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+    }
+
+    /***** Init data if empty *****/
+    let products = loadProducts();
+    if(!products){
+      // add placeholder images
+      products = SAMPLE_PRODUCTS.map(p=>({...p,img:makePlaceholderSVG(p.name),created:Date.now(),id:p.id}));
+      saveProducts(products);
+    }
+    let cart = loadCart();
+    let sales = loadSales();
+
+    /***** Rendering functions *****/
+    const productsEl = document.getElementById('products');
+    const cartListEl = document.getElementById('cartList');
+    const cartCountEl = document.getElementById('cartCount');
+    const cartTotalEl = document.getElementById('cartTotal');
+    const stockSummaryEl = document.getElementById('stockSummary');
+
+    function renderProducts(){
+      const q = document.getElementById('search').value.trim().toLowerCase();
+      const f = document.getElementById('filter').value;
+      productsEl.innerHTML='';
+      const filtered = products.filter(p=>{
+        if(f!=='all' && p.cat!==f) return false;
+        if(!q) return true;
+        return (p.name+ ' ' + (p.desc||'') + ' ' + p.cat).toLowerCase().includes(q);
+      });
+      if(filtered.length===0) productsEl.innerHTML='<div class="muted">沒有找到商品</div>';
+      filtered.forEach(p=>{
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `
+          <div class="thumb" style="background-image:url('${p.img}');background-size:cover;background-position:center"></div>
+          <div>
+            <p class="prod-name">${p.name}</p>
+            <div class="small muted">${p.cat} · 庫存: <strong>${p.stock}</strong></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+              <div>
+                <div class="price">NT$ ${p.price}</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="addToCart(${p.id})" ${p.stock<=0? 'disabled':''}>加入購物車</button>
+                <button class="alt" onclick='viewDetail(${p.id})'>詳情</button>
+              </div>
+            </div>
+          </div>`;
+        productsEl.appendChild(div);
+      })
+      updateStockSummary();
+    }
+
+    function updateStockSummary(){
+      const totalStock = products.reduce((s,p)=>s+p.stock,0);
+      stockSummaryEl.textContent = `總庫存 ${totalStock} 件 / 商品數 ${products.length}`;
+    }
+
+    function addToCart(id){
+      const p = products.find(x=>x.id===id);
+      if(!p || p.stock<=0){alert('已無庫存');return}
+      const existing = cart.find(c=>c.id===id);
+      if(existing){
+        if(existing.qty+1>p.stock){alert('超過庫存數量');return}
+        existing.qty++;
+      } else {
+        cart.push({id:p.id,name:p.name,price:p.price,qty:1});
+      }
+      saveCart(cart); renderCart();
+    }
+
+    function viewDetail(id){
+      const p = products.find(x=>x.id===id);
+      if(!p) return; alert(`${p.name}\n分類: ${p.cat}\n價格: NT$ ${p.price}\n庫存: ${p.stock}\n\n${p.desc||''}`)
+    }
+
+    function renderCart(){
+      cartListEl.innerHTML='';
+      if(cart.length===0) cartListEl.innerHTML='<div class="muted">購物車是空的</div>';
+      cart.forEach(item=>{
+        const p = products.find(x=>x.id===item.id);
+        const div = document.createElement('div'); div.className='cart-item';
+        div.innerHTML = `
+          <div style="flex:1">
+            <div style="font-weight:700">${item.name}</div>
+            <div class="small muted">NT$ ${item.price} x ${item.qty}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px">
+              <button onclick="changeQty(${item.id},${item.qty-1})">-</button>
+              <button onclick="changeQty(${item.id},${item.qty+1})">+</button>
+            </div>
+            <button class="alt" onclick="removeFromCart(${item.id})">移除</button>
+          </div>`;
+        cartListEl.appendChild(div);
+      })
+      const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+      const count = cart.reduce((s,i)=>s+i.qty,0);
+      cartCountEl.textContent = count; cartTotalEl.textContent = total;
+    }
+
+    function changeQty(id,newQty){
+      const item = cart.find(c=>c.id===id); if(!item) return;
+      const p = products.find(x=>x.id===id);
+      if(newQty<=0){ cart = cart.filter(c=>c.id!==id); } else if(newQty>p.stock){ alert('超過庫存'); return } else { item.qty=newQty }
+      saveCart(cart); renderCart();
+    }
+    function removeFromCart(id){ cart = cart.filter(c=>c.id!==id); saveCart(cart); renderCart(); }
+
+    document.getElementById('clearCart').addEventListener('click',()=>{ if(confirm('清空購物車？')){cart=[];saveCart(cart);renderCart()} })
+
+    /***** Checkout: 會直接扣庫存並記錄銷售紀錄 *****/
+    document.getElementById('checkout').addEventListener('click',()=>{
+      if(cart.length===0){alert('購物車為空');return}
+      // 驗證庫存
+      for(const item of cart){
+        const p = products.find(x=>x.id===item.id);
+        if(!p || item.qty>p.stock){alert(`${item.name} 庫存不足，請調整數量`);return}
+      }
+      if(!confirm('確認結帳？')) return;
+      // 扣庫存
+      for(const item of cart){
+        const p = products.find(x=>x.id===item.id);
+        p.stock -= item.qty;
+      }
+      // 記錄銷售
+      const sale = {id:uid(),date:new Date().toISOString(),items:cart.map(c=>({...c})),total:cart.reduce((s,i)=>s+i.qty*i.price,0)};
+      sales.push(sale); saveSales(sales);
+      saveProducts(products);
+      // 清空購物車
+      cart=[]; saveCart(cart); renderCart(); renderProducts();
+      alert('結帳成功！感謝購買');
+    })
+
+    /***** 管理員系統（簡易示範） *****/
+    const ADMIN = {user:'admin',pass:'admin123'};
+    let isAdmin = false;
+    document.getElementById('loginBtn').addEventListener('click',()=>{
+      const u = document.getElementById('adminUser').value.trim();
+      const p = document.getElementById('adminPass').value.trim();
+      if(u===ADMIN.user && p===ADMIN.pass){ isAdmin=true; alert('登入成功'); showAdminControls(); } else { alert('帳號或密碼錯誤') }
+    });
+    document.getElementById('logoutBtn').addEventListener('click',()=>{ isAdmin=false; showAdminControls(); })
+    document.getElementById('adminBtn').addEventListener('click',()=>{ window.scrollTo({top:0,behavior:'smooth'}); document.getElementById('adminUser').focus(); })
+
+    function showAdminControls(){
+      document.getElementById('adminControls').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('logoutBtn').style.display = isAdmin ? 'inline-block' : 'none';
+      document.getElementById('loginBtn').style.display = isAdmin ? 'none' : 'inline-block';
+      if(isAdmin) renderInventory();
+    }
+
+    document.getElementById('showInventory').addEventListener('click',()=>{ renderInventory(); })
+    function renderInventory(){
+      const el = document.getElementById('inventoryList');
+      el.innerHTML='';
+      const table = document.createElement('div');
+      table.innerHTML = products.map(p=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #eee"><div><strong>${p.name}</strong><div class=\"small muted\">ID:${p.id} · ${p.cat}</div></div><div><div class=\"small muted\">庫存:${p.stock}</div><div style=\"margin-top:6px\"><button onclick=\"promptRestock(${p.id})\">補貨</button> <button onclick=\"deleteProduct(${p.id})\" class=\"alt\">刪除</button></div></div></div>`).join('');
+      el.appendChild(table);
+    }
+
+    window.promptRestock = function(id){
+      if(!isAdmin) return alert('請先登入');
+      const n = parseInt(prompt('輸入補貨數量(正整數)'),10);
+      if(isNaN(n) || n<=0) return alert('數字不正確');
+      const p = products.find(x=>x.id===id); if(!p) return;
+      p.stock += n; saveProducts(products); renderInventory(); renderProducts(); updateStockSummary();
+    }
+
+    window.deleteProduct = function(id){ if(!isAdmin) return alert('請先登入'); if(!confirm('確定刪除此商品？')) return; products = products.filter(p=>p.id!==id); saveProducts(products); renderInventory(); renderProducts(); }
+
+    document.getElementById('addProductBtn').addEventListener('click',()=>{
+      if(!isAdmin) return alert('請先登入'); openModal();
+    })
+
+    document.getElementById('cancelModal').addEventListener('click',closeModal);
+    document.getElementById('saveProduct').addEventListener('click',()=>{
+      const name = document.getElementById('pName').value.trim();
+      const cat = document.getElementById('pCat').value.trim()||'其他';
+      const price = parseInt(document.getElementById('pPrice').value,10)||0;
+      const stockVal = parseInt(document.getElementById('pStock').value,10)||0;
+      const desc = document.getElementById('pDesc').value.trim();
+      const img = document.getElementById('pImg').value.trim()||makePlaceholderSVG(name||'商品');
+      if(!name || price<=0) return alert('請填寫名稱與價格');
+      const newP = {id:uid(),name,cat,price,stock:stockVal,desc,img,created:Date.now()};
+      products.push(newP); saveProducts(products); closeModal(); renderProducts(); renderInventory();
+    })
+
+    function openModal(){ document.getElementById('modal').style.display='flex'; document.getElementById('modalTitle').textContent='新增商品'; }
+    function closeModal(){ document.getElementById('modal').style.display='none'; document.getElementById('pName').value='';document.getElementById('pCat').value='';document.getElementById('pPrice').value='';document.getElementById('pStock').value='';document.getElementById('pDesc').value='';document.getElementById('pImg').value=''; }
+
+    /***** 銷售紀錄檢視與匯出 *****/
+    document.getElementById('viewSales').addEventListener('click',()=>{ renderSalesModal(); })
+    function renderSalesModal(){
+      const el = document.getElementById('salesList'); el.innerHTML='';
+      if(sales.length===0) el.innerHTML='<div class="muted">尚無銷售紀錄</div>';
+      sales.slice().reverse().forEach(s=>{
+        const box = document.createElement('div'); box.style.borderBottom='1px solid #eee'; box.style.padding='8px 0';
+        box.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>訂單 ${s.id}</strong><div class=\"small muted\">${new Date(s.date).toLocaleString()}</div></div><div><strong>NT$ ${s.total}</strong></div></div>`;
+        const itemList = document.createElement('div'); itemList.className='small muted'; itemList.style.marginTop='6px'; itemList.innerHTML = s.items.map(i=>`${i.name} × ${i.qty}（NT$ ${i.price}）`).join('<br>');
+        box.appendChild(itemList); el.appendChild(box);
+      })
+      document.getElementById('salesModal').style.display='flex';
+    }
+    document.getElementById('closeSales').addEventListener('click',()=>{ document.getElementById('salesModal').style.display='none' })
+
+    document.getElementById('exportSales').addEventListener('click',()=>{
+      if(!isAdmin) return alert('請先登入');
+      if(sales.length===0) return alert('沒有銷售紀錄可匯出');
+      let csv = 'order_id,date,total,items\n';
+      sales.forEach(s=>{
+        const items = s.items.map(i=>`${i.name} x ${i.qty}`).join('|');
+        csv += `${s.id},"${s.date}",${s.total},"${items}"\n`;
+      })
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='sales_export.csv'; a.click(); URL.revokeObjectURL(url);
+    })
+
+    /***** 重設範例資料 *****/
+    document.getElementById('resetSample').addEventListener('click',()=>{
+      if(!confirm('將重設為初始 20 種範例商品，且會清除銷售與購物車資料。確定？')) return;
+      products = SAMPLE_PRODUCTS.map(p=>({...p,img:makePlaceholderSVG(p.name),created:Date.now(),id:p.id})); saveProducts(products);
+      sales = []; saveSales(sales); cart = []; saveCart(cart);
+      renderProducts(); renderCart(); renderInventory(); alert('重設完成');
+    })
+
+    /***** 小功能：刪除商品全域暴露（受限於管理員） *****/
+    window.deleteProduct = window.deleteProduct || function(id){ if(!isAdmin) return alert('請先登入'); products = products.filter(p=>p.id!==id); saveProducts(products); renderProducts(); renderInventory(); }
+
+    /***** 搜尋與篩選互動 *****/
+    document.getElementById('search').addEventListener('input',renderProducts);
+    document.getElementById('filter').addEventListener('change',renderProducts);
+
+    // 初次渲染
+    renderProducts(); renderCart(); showAdminControls();
+
+  </script>
+</body>
+</html>
