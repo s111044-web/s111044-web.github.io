@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI經濟趨勢分析互動App</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #f1f8ff);
+      margin: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #1a237e;
+      color: white;
+      padding: 20px;
+      font-size: 26px;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    main {
+      padding: 30px;
+    }
+    .options {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      width: 80%;
+      margin: 0 auto 25px auto;
+      text-align: left;
+    }
+    label {
+      display: block;
+      font-size: 18px;
+      margin: 8px 0;
+    }
+    button {
+      background-color: #3949ab;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #5c6bc0;
+    }
+    canvas {
+      margin-top: 40px;
+      width: 90%;
+      max-width: 900px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      padding: 15px;
+    }
+    .report {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 80%;
+      margin: 40px auto;
+      text-align: left;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    }
+    footer {
+      background-color: #1a237e;
+      color: white;
+      padding: 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>AI經濟趨勢分析互動App</header>
+
+  <main>
+    <h2>選擇想要分析的經濟資料</h2>
+
+    <div class="options">
+      <label><input type="checkbox" id="inflation"> 通貨膨脹率</label>
+      <label><input type="checkbox" id="tariff"> 川普關稅影響</label>
+      <label><input type="checkbox" id="stock"> 股市指數</label>
+      <label><input type="checkbox" id="rate"> 利率變化</label>
+      <button onclick="analyze()">開始分析</button>
+    </div>
+
+    <canvas id="chartCanvas"></canvas>
+
+    <div class="report" id="analysisReport">
+      <h3>📈 分析報告</h3>
+      <p>請勾選上方想分析的項目後再點擊「開始分析」。</p>
+    </div>
+  </main>
+
+  <footer>AI經濟模擬系統 | 經濟學創意應用設計 © 2025</footer>
+
+  <script>
+    let chartInstance = null;
+
+    // 生成模擬數據
+    function generateRandomData(base, volatility) {
+      let data = [];
+      let value = base;
+      for (let i = 0; i < 12; i++) {
+        value += (Math.random() - 0.5) * volatility;
+        value = Math.round(value * 100) / 100;
+        data.push(value);
+      }
+      return data;
+    }
+
+    function analyze() {
+      const months = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+      const ctx = document.getElementById("chartCanvas").getContext("2d");
+      const report = document.getElementById("analysisReport");
+
+      if (chartInstance) chartInstance.destroy();
+
+      let datasets = [];
+      let analysisText = "<h3>📊 模擬分析報告</h3>";
+
+      // 通膨
+      if (document.getElementById("inflation").checked) {
+        const inflation = generateRandomData(2.5, 1);
+        datasets.push({
+          label: "通膨率 (%)",
+          data: inflation,
+          borderColor: "#f44336",
+          backgroundColor: "rgba(244,67,54,0.2)",
+          tension: 0.4,
+          fill: true
+        });
+        const avg = inflation.reduce((a,b)=>a+b,0)/inflation.length;
+        analysisText += `<p>📉 <b>通膨率</b> 平均 ${avg.toFixed(2)}%，屬於 ${
+          avg > 3 ? "高通膨環境，央行可能升息抑制物價。" : "穩定通膨，經濟增長持續。"
+        }</p>`;
+      }
+
+      // 關稅
+      if (document.getElementById("tariff").checked) {
+        const tariff = generateRandomData(0, 10);
+        datasets.push({
+          label: "川普關稅指數",
+          data: tariff,
+          borderColor: "#ff9800",
+          backgroundColor: "rgba(255,152,0,0.2)",
+          tension: 0.4,
+          fill: true
+        });
+        const avg = tariff.reduce((a,b)=>a+b,0)/tariff.length;
+        analysisText += `<p>🇺🇸 <b>關稅指數</b> 平均 ${avg.toFixed(2)}，顯示 ${
+          avg > 5 ? "貿易摩擦升溫，進出口壓力加劇。" : "關稅穩定，有利全球貿易環境。"
+        }</p>`;
+      }
+
+      // 股市
+      if (document.getElementById("stock").checked) {
+        const stock = generateRandomData(15000, 900);
+        datasets.push({
+          label: "股市指數",
+          data: stock,
+          borderColor: "#2196f3",
+          backgroundColor: "rgba(33,150,243,0.2)",
+          tension: 0.4,
+          fill: true
+        });
+        const change = stock[11] - stock[0];
+        analysisText += `<p>📈 <b>股市指數</b> ${
+          change > 0 ? "呈現上升趨勢 📈 投資氣氛樂觀。" : "下跌趨勢 📉 投資人需謹慎。"
+        }</p>`;
+      }
+
+      // 利率
+      if (document.getElementById("rate").checked) {
+        const rate = generateRandomData(1.8, 0.6);
+        datasets.push({
+          label: "利率 (%)",
+          data: rate,
+          borderColor: "#4caf50",
+          backgroundColor: "rgba(76,175,80,0.2)",
+          tension: 0.4,
+          fill: true
+        });
+        const avg = rate.reduce((a,b)=>a+b,0)/rate.length;
+        analysisText += `<p>💰 <b>利率</b> 平均 ${avg.toFixed(2)}%，顯示 ${
+          avg > 2 ? "政策偏緊，抑制通膨。" : "貨幣寬鬆，有助於刺激經濟。"
+        }</p>`;
+      }
+
+      if (datasets.length === 0) {
+        report.innerHTML = "<p style='color:red;'>⚠️ 請至少選擇一項資料再進行分析。</p>";
+        return;
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: months,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "AI模擬：多變數經濟折線分析圖",
+              font: { size: 18 }
+            },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: "數值變化（單位依指標不同）" }
+            }
+          }
+        }
+      });
+
+      report.innerHTML = analysisText;
+    }
+  </script>
+</body>
+</html>
